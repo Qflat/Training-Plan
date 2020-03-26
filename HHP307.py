@@ -1,0 +1,319 @@
+from tkinter import *
+from datetime import date
+import random
+
+class Day:
+    def __init__(self,dif_level,race,double,training_for,ran):
+        self.dif_level=dif_level
+        if self.dif_level==2 or self.dif_level==3:
+            self.lift=True
+        else:
+            self.lift=False
+        self.race=race
+        self.double=double
+        self.training_for=training_for
+        if ran_before==1:
+            self.ran=True
+        elif ran_before==0:
+            self.ran=False
+        self.five_tenk_workouts=['3 miles of 2 minutes on, 2 minutes off','Tempo Run','6-8 hill repeats (200-300 meters)','2-3 sets of (800-400-400)',
+                                '2x1 Mile, 2x800m, 3x400m','3 x (1200-600-400-200)','400m repeats','6 x 1000m','1 Mile Repeats, descending paces']
+        self.marathon_workouts=['4 x 4k @ Marathon Pace','4 x 2 Miles @ Marathon Pace','10-15 x 1k Repeats','10 x 1 Mile Repeats','10k race holding Marathon Pace']
+        if self.race==True:
+            self.workout='Race Day'
+        else:
+            if self.dif_level==0:
+                self.workout='Rest Day'
+            elif self.dif_level==1:
+                if self.training_for=='5k':
+                    if self.ran:
+                        self.workout='Easy 4-6 Mile Run'
+                    else:
+                        self.workout='Easy 20-30 Minute Run'
+                elif self.training_for=='8k':
+                    if self.ran:
+                        self.workout='Easy 5-7 Mile Run'
+                    else:
+                        self.workout='Easy 3-5 Mile Run'
+                elif self.training_for=='10k':
+                    if self.ran:
+                        self.workout='Easy 6-8 Mile Run'
+                    else:
+                        self.workout='Easy 30 Minute Run'
+                elif self.training_for=='Half Marathon':
+                    if self.ran:
+                        self.workout='Easy 7-8 Mile Run'
+                    else:
+                        self.workout='Easy 30-45 Minute Run'
+                elif self.training_for=='Marathon':
+                    if self.ran:
+                        self.workout='Easy 10-15 Mile Run'
+                    else:
+                        self.workout='Easy 45-60 Minute Run'
+            elif self.dif_level==2:
+                if self.training_for=='Half Marathon' or self.training_for=='Marathon':
+                    if self.ran:
+                        self.workout='Easy Run w/ six 60 second pickups'
+                    else:
+                        self.workout='Easy Run w/ four 30 second pickups'
+                else:
+                    if self.ran:
+                        self.workout='Easy Run w/ six 30 second pickups'
+                    else:
+                        self.workout='Easy Run w/ three 30 second pickups'
+            elif self.dif_level==3:
+                if self.race:
+                    self.workout='Race Day'
+                else:
+                    if self.training_for=='5k' or self.training_for=='10k':
+                        self.workout=self.five_tenk_workouts[random.randint(0,len(self.five_tenk_workouts)-1)]
+                    else:
+                        # Marathon Training
+                        self.workout=self.marathon_workouts[random.randint(0,len(self.marathon_workouts)-1)]
+            if self.double==True:
+                self.workout=self.workout+' with an easy 15 minute morning jog'
+
+root=Tk()
+
+def close():
+    global race_day
+    race_day=race_date.get()
+    global weight
+    weight=w.get()
+    global goal
+    goal=g.get()
+    global start_date
+    start_date=start.get()
+    root.destroy()
+
+root.title('Input Variables')
+Label(root,text='Welcome to your very own running training program! We just need to know a few things about you!').grid(row=0,column=0)
+tkvar=StringVar()
+choice=['5k','8k','10k','Half Marathon','Marathon']
+drop_menu=OptionMenu(root,tkvar,*choice)
+drop_menu.grid(row=1,column=0)
+ran=IntVar()
+widget=Checkbutton(root,text='Have you ran before?',variable=ran,onvalue=1,offvalue=0)
+widget.grid(row=2,column=0)
+Label(root,text='Please enter your race date in the format mm-dd-yyyy').grid(row=3,column=0)
+race_date=Entry(root)
+race_date.grid(row=3,column=1)
+Label(root,text='Please enter your weight in kilograms here:').grid(row=4,column=0)
+w=Entry(root)
+w.grid(row=4,column=1)
+Label(root,text='Please enter your goal time in the format hh:mm:ss below').grid(row=5,column=0)
+Label(root,text='If your goal is just to complete the distance, please enter "completion" in the box').grid(row=6,column=0)
+g=Entry(root)
+g.grid(row=6,column=1)
+Label(root,text='Please enter the date you would like to start training in the format mm-dd-yyyy').grid(row=7,column=0)
+start=Entry(root)
+start.grid(row=7,column=1)
+button=Button(root,text='Build My Program',command=close)
+button.grid(row=8)    
+root.mainloop()
+
+training_for=tkvar.get()
+ran_before=ran.get()
+dt1=date(int(start_date[6:10]),int(start_date[0:2]),int(start_date[3:5]))
+dt2=date(int(race_day[6:10]),int(race_day[0:2]),int(race_day[3:5]))
+daysOfTraining=dt2-dt1
+days=int(daysOfTraining.days)
+
+pattern_a=[1,0,1,0,1,1,0]
+pattern_b=[1,0,1,2,0,1,0]
+pattern_c=[1,2,1,0,1,1,0]
+pattern_d=[2,1,3,0,1,2,1]
+pattern_e=[1,2,1,3,0,2,1]
+race_week=[2,1,1,1,1,1,1]
+
+if ran_before==1:
+    if goal.capitalize()=='Completion':
+        user_pattern=pattern_b
+    else:
+        if training_for=='5k':
+            user_pattern=pattern_c
+        elif training_for=='8k':
+            user_pattern=pattern_d
+        elif training_for=='10k':
+            user_pattern=pattern_d
+        elif training_for=='Half Marathon':
+            user_pattern=pattern_e
+        elif training_for=='Marathon':
+            user_pattern=pattern_e
+else:
+    user_pattern=pattern_a
+
+count=0
+workouts=[]
+
+for i in range(0,days+1):
+    j=i+1
+    if i==days:
+        # Race Day
+        race=True
+    else:
+        race=False
+        if user_pattern[count]==3:
+            double=True
+        else:
+            double=False
+    insert=Day(user_pattern[count],race,double,training_for,ran_before)
+    workouts.append(insert.workout)
+    if count+1==7:
+        count=0
+    else:
+        count+=1
+    if i==days-6:
+        count=0
+        user_pattern=race_week
+
+def build_lift(x):
+    lift=''
+    lift_pool=['3x6 seated rows','3x8 Supine Pullovers','3x8 Bulgarian Squats','4x4 Cleans w/ barbell','3x8 back extensions','3x6 military press',
+           '3x10 stability ball leg curl','3x6 bench press','4x4 squats','3x8 landmines','10-20 pushups, pullups, and/or dips',
+           '3x30 seconds balance ball','3x8 dumbbell lunges']
+    for a in range(0,x):
+        lift=lift+str(random.choice(lift_pool))
+        if a==(x-1):
+            pass
+        else:
+            lift=lift+'*'
+    return lift
+
+lifts=[]
+
+for i in range(0,len(workouts)):
+    if 'pickups' in workouts[i] or ' with an easy 15 minute morning jog' in workouts[i]:
+        if ran_before==1:
+            lift=build_lift(7)
+        else:
+            lift=build_lift(4)
+        b=lift.split('*')
+        lifts.append(b)
+    else:
+        lifts.append('No lift')
+
+def make_day(month,day,run,lift):
+    string=month+' '+day+':\n\n'+'Workout: '+run+'\n'+'Lift: \n'
+    if lift=='No lift':
+        string=string+'No lift'
+    else:
+        for a in range(0,len(lift)):
+            string=string+lift[a]+'\n'
+    return string
+
+day=int(dt1.day)
+month=int(dt1.month)
+year=int(dt1.year)
+stop_day=int(dt2.day)
+stop_month=int(dt2.month)
+stop_year=int(dt2.year)
+months={1:'January',2:'February',3:'March',4:'April',5:'May',6:'June',7:'July',8:'August',9:'September',10:'October',11:'November',12:'December'}
+string=''
+p=0
+for i in range(0,len(workouts)):
+    string=string+months[month]+' '+str(day)+':\n'
+    if day!=stop_day or month!=stop_month or year!=stop_year:
+        string=string+workouts[i]+'\n'+'Lift:\n'
+        if lifts[i]!='No lift':
+            pull=lifts[i]
+            for j in range(0,len(lifts[i])):
+                string=string+pull[j]
+                if j==len(lifts[i])-1:
+                    string=string+'.'
+                else:
+                    string=string+', '
+        else:
+            string=string+'No lift'
+    else:
+        string=string+'Race Day, good luck!\n'
+        if goal.capitalize()=='Completion':
+            string=string+'Just remember to stay relaxed in the first half of the race, don\'t expend too much energy. Once you get past halfway,\
+be sure to slowly focus on passing anyone in front of you. In the final several miles, feel free to push it more and more and surge across the finish line!'
+        else:
+            # Time Goal
+            t=goal.split(':')
+            if len(t)==3:
+                hours=int(t[0])
+                minutes=int(t[1])
+                seconds=int(t[2])
+            else:
+                hours=0
+                minutes=int(t[0])
+                seconds=int(t[1])
+            while hours>0:
+                hours-=1
+                minutes+=60
+            while minutes>0:
+                minutes-=1
+                seconds+=60
+            if training_for=='5k':
+                p=seconds/3.1
+            elif training_for=='8k':
+                p=seconds/4.97
+            elif training_for=='10k':
+                p=seconds/6.2
+            elif training_for=='Half Marathon':
+                p=seconds/13.1
+            elif training_for=='Marathon':
+                p=seconds/26.2
+            while p>60:
+                p-=60
+                minutes+=1
+            while minutes>60:
+                minutes-=60
+                hours+=1
+            pace=str(minutes)+':'+str(int(p))
+            if hours>0:
+                pace=str(hours)+':'+pace
+            string=string+'\nYour goal pace is '+pace+' per mile.'
+    string=string+'\n\n\n'
+    if month==1 and day==31:
+        month=2
+        day=1
+    elif month==2 and day>27:
+        month=3
+        day=1
+    elif month==3 and day==31:
+        month=4
+        day=1
+    elif month==4 and day==30:
+        month=5
+        day=1
+    elif month==5 and day==31:
+        month=6
+        day=1
+    elif month==6 and day==30:
+        month=7
+        day=1
+    elif month==7 and day==31:
+        month=8
+        day=1
+    elif month==8 and day==31:
+        month=9
+        day=1
+    elif month==9 and day==30:
+        month=10
+        day=1
+    elif month==10 and day==31:
+        month=11
+        day=1
+    elif month==11 and day==30:
+        month=12
+        day=1
+    elif month==12 and day==31:
+        month=1
+        day=1
+        year+=1
+    else:
+        day+=1
+
+try:
+    f=open('training_plan.doc','w')
+    f.write(string)
+    f.close()
+except PermissionError:
+    msg=Tk()
+    msg.title('Error')
+    Label(msg,text='Please close the training program file before creating a new plan').pack()
+    msg.mainloop()
